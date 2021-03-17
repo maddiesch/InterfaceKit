@@ -97,7 +97,7 @@ fileprivate struct _MonthView<DayView : View> : View {
                 ForEach(month.days) { day in
                     self.provider(day.calendarDay).onTapGesture {
                         self.date.wrappedValue = day.date
-                    }.border(Color.orange, width: 1)
+                    }
                 }
             }
         }

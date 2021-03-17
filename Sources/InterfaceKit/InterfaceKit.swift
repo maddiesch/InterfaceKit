@@ -43,12 +43,9 @@ extension View {
 public struct Interface {
 }
 
-#if canImport(Cocoa)
-import Cocoa
-
 extension Interface {
-    @available(macOS 11, *)
     public static func toggleSidebar() {
+        #if os(macOS)
         let responders = NSApp.keyWindow?.firstResponder?.allResponders.reversed() ?? []
         let selector = #selector(NSSplitViewController.toggleSidebar(_:))
         
@@ -59,9 +56,12 @@ extension Interface {
                 }
             }
         }
+        #endif
     }
 }
 
+
+#if os(macOS)
 
 extension NSResponder {
     public var allResponders: Array<NSResponder> {

@@ -10,7 +10,7 @@ let package = Package(
         .iOS(.v14)
     ],
     products: [
-        .library(name: "InterfaceKit", targets: ["InterfaceKit"]),
+        .library(name: "InterfaceKit", targets: ["InterfaceKit"])
     ],
     dependencies: [],
     targets: [

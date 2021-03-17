@@ -13,6 +13,10 @@ public struct OptionalValueView<Content : View, Value> : View {
     var value: Value?
     var noValueView: AnyView
     
+    public init<V : View>(value: Value?, @ViewBuilder provider: @escaping (Value) -> Content, @ViewBuilder fallback: () -> V) {
+        self.init(value: value, noValue: AnyView(fallback()), provider: provider)
+    }
+    
     public init(value: Value?, noValue: AnyView? = nil, @ViewBuilder provider: @escaping (Value) -> Content) {
         self.value = value
         self.provider = provider

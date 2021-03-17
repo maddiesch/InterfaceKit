@@ -10,13 +10,16 @@ import SwiftUI
 open class ErrorPresenter : Identifiable {
     public let error: Error
     
-    public init(error: Error) {
+    public let title: Text
+    
+    public init(title: Text, error: Error) {
+        self.title = title
         self.error = error
     }
     
-    open func alertView() -> Alert {
+    open var alertView: Alert {
         return Alert(
-            title: Text("IFK-ErrorPresenterAlertTitle"),
+            title: self.title,
             message: Text(error.localizedDescription)
         )
     }

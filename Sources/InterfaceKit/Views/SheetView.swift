@@ -29,7 +29,7 @@ public struct SheetView<Content : View> : View {
                     Image(systemName: self.closeButtonImageName)
                 }.buttonStyle(PlainButtonStyle()).keyboardShortcut(.escape)
                 Spacer()
-            }
+            }.foregroundColor(.secondary)
             Text(self.title).font(.largeTitle)
             ZStack {
                 self.content

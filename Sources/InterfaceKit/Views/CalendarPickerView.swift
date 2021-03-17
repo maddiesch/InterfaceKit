@@ -12,25 +12,22 @@ public struct CalendarPickerView<DayView: View> : View {
     
     private let date: Binding<Date>
     private let provider: (CalendarDay) -> DayView
-    private let dateFormatter: DateFormatter
     private let dateRange: DateInterval
+    private let dateFormatter: DateFormatter?
     
     @State private var presentedDate: Date
     
-    public init(date: Binding<Date>, range: DateInterval = .init(start: .distantPast, end: .distantFuture), @ViewBuilder provider: @escaping (CalendarDay) -> DayView) {
+    public init(date: Binding<Date>, dateRange: DateInterval = .init(start: .distantPast, end: .distantFuture), @ViewBuilder provider: @escaping (CalendarDay) -> DayView) {
         self.date = date
         self.provider = provider
         self._presentedDate = State(wrappedValue: date.wrappedValue)
-        self.dateRange = range
-        self.dateFormatter = {
-            let f = DateFormatter()
-            f.dateFormat = "MMMM YYYY"
-            return f
-        }()
+        self.dateRange = dateRange
+        self.dateFormatter = nil
     }
     
     public var body: some View {
-        _MonthView($presentedDate, dateFormatter, calendar, dateRange, date, provider).frame(minWidth: 300.0, minHeight: 300.0, alignment: .top)
+        _MonthView($presentedDate, dateFormatter, calendar, dateRange, date, provider)
+            .frame(minWidth: 300.0, minHeight: 270.0, alignment: .top)
     }
 }
 
@@ -38,11 +35,10 @@ public struct CalendarDay {
     public let date: Date
     public let isDisplayedMonth: Bool
     public let isToday: Bool
+    public let dayOfMonth: Int
 }
 
 public struct SimpleCalendarDayView : View {
-    @Environment(\.calendar) var calendar
-    
     private let day: CalendarDay
     
     public init(day: CalendarDay) {
@@ -50,18 +46,10 @@ public struct SimpleCalendarDayView : View {
     }
     
     public var body: some View {
-        VStack {
-            Spacer()
-            HStack {
-                Spacer()
-                Text(String(calendar.component(.day, from: day.date)))
-                Spacer()
-            }
-            Spacer()
-        }
-        .modifier(CircularBorderViewModifier(lineWidth: day.isToday ? 2.0 : 0.0, lineColor: Color.separator))
-        .aspectRatio(1.0, contentMode: .fit)
-        .hidden(notHidden: day.isDisplayedMonth)
+        Text(String(day.dayOfMonth))
+            .modifier(CenterViewModifier())
+            .modifier(CircularBorderViewModifier(lineWidth: day.isToday ? 2.0 : 0.0, lineColor: Color.separator))
+            .hidden(notHidden: day.isDisplayedMonth)
     }
 }
 
@@ -76,14 +64,21 @@ fileprivate struct _MonthView<DayView : View> : View {
     private let previous: Date
     private let next: Date
     
-    init(_ presentedDate: Binding<Date>, _ formatter: DateFormatter, _ calendar: Calendar, _ range: DateInterval, _ date: Binding<Date>, _ provider: @escaping (CalendarDay) -> DayView) {
+    init(_ presentedDate: Binding<Date>, _ formatter: DateFormatter?, _ calendar: Calendar, _ range: DateInterval, _ date: Binding<Date>, _ provider: @escaping (CalendarDay) -> DayView) {
+        let df = formatter ?? {
+            let f = DateFormatter()
+            f.locale = calendar.locale
+            f.dateFormat = "MMMM YYYY"
+            return f
+        }()
+        
         self.date = date
         self.dateRange = range
         self.provider = provider
         self.presented = presentedDate
-        self.month = _Month(presentedDate.wrappedValue, formatter, calendar)
+        self.month = _Month(presentedDate.wrappedValue, df, calendar)
         self.columns = Array(repeating: .init(spacing: 0.0), count: 7)
-        self.dayNames = calendar.shortWeekdaySymbols
+        self.dayNames = calendar._sortedShortWeekdaySymbols
         self.previous = presentedDate.wrappedValue.previousMonth(calendar)
         self.next = presentedDate.wrappedValue.nextMonth(calendar)
     }
@@ -95,9 +90,11 @@ fileprivate struct _MonthView<DayView : View> : View {
                     Text($0)
                 }.font(.subheadline).foregroundColor(.secondary)
                 ForEach(month.days) { day in
-                    self.provider(day.calendarDay).onTapGesture {
-                        self.date.wrappedValue = day.date
-                    }
+                    self.provider(day.calendarDay)
+                        .aspectRatio(1.0, contentMode: .fit)
+                        .onTapGesture {
+                            self.date.wrappedValue = day.date
+                        }
                 }
             }
         }
@@ -105,11 +102,13 @@ fileprivate struct _MonthView<DayView : View> : View {
     
     var header: some View {
         HStack {
-            Text(month.localizedName).bold().onTapGesture {
-                withAnimation {
-                    self.presented.wrappedValue = self.date.wrappedValue
+            Text(month.localizedName)
+                .bold()
+                .onTapGesture {
+                    withAnimation {
+                        self.presented.wrappedValue = self.date.wrappedValue
+                    }
                 }
-            }
             Spacer()
             HStack {
                 Button {
@@ -128,6 +127,7 @@ fileprivate struct _MonthView<DayView : View> : View {
                 .disabled(next > dateRange.end)
             }.buttonStyle(PlainButtonStyle())
         }
+        .padding(.bottom, 8.0)
     }
 }
 
@@ -168,7 +168,12 @@ fileprivate struct _Month : Identifiable {
         self.date = month
         self.localizedName = formatter.string(from: month)
         self.days = _Month.days(month, calendar).map {
-            _Day(date: $0, isMonth: calendar.isDate($0, equalTo: month, toGranularity: .month), isToday: calendar.isDate($0, equalTo: Date(), toGranularity: .day))
+            _Day(
+                date: $0,
+                isMonth: calendar.isDate($0, equalTo: month, toGranularity: .month),
+                isToday: calendar.isDate($0, equalTo: Date(), toGranularity: .day),
+                day: calendar.component(.day, from: $0)
+            )
         }
     }
     
@@ -190,9 +195,10 @@ fileprivate struct _Day : Identifiable {
     let date: Date
     let isMonth: Bool
     let isToday: Bool
+    let day: Int
     
     var calendarDay: CalendarDay {
-        CalendarDay(date: date, isDisplayedMonth: isMonth, isToday: isToday)
+        CalendarDay(date: date, isDisplayedMonth: isMonth, isToday: isToday, dayOfMonth: day)
     }
 }
 
@@ -215,6 +221,16 @@ extension Calendar {
         }
         
         return dates
+    }
+    
+    fileprivate var _sortedShortWeekdaySymbols: Array<String> {
+        let weekDays = self.shortWeekdaySymbols
+        let firstIndex = self.firstWeekday - 1
+        
+        return Array(
+            weekDays[firstIndex ..< weekDays.count] +
+                weekDays[0 ..< firstIndex]
+        )
     }
 }
 

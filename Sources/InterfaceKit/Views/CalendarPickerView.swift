@@ -30,9 +30,7 @@ public struct CalendarPickerView<DayView: View> : View {
     }
     
     public var body: some View {
-        VStack {
-            _MonthView($presentedDate, dateFormatter, calendar, dateRange, date, provider)
-        }
+        _MonthView($presentedDate, dateFormatter, calendar, dateRange, date, provider).frame(minWidth: 300.0, minHeight: 300.0, alignment: .top)
     }
 }
 
@@ -99,7 +97,7 @@ fileprivate struct _MonthView<DayView : View> : View {
                 ForEach(month.days) { day in
                     self.provider(day.calendarDay).onTapGesture {
                         self.date.wrappedValue = day.date
-                    }
+                    }.border(Color.orange, width: 1)
                 }
             }
         }
@@ -209,9 +207,11 @@ extension Calendar {
                 return
             }
             
-            dates.append(date)
-            
-            stop = date >= interval.end
+            if date >= interval.end {
+                stop = true
+            } else {
+                dates.append(date)
+            }
         }
         
         return dates

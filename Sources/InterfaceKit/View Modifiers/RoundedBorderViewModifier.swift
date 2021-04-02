@@ -21,9 +21,10 @@ public struct RoundedBorderViewModifier : ViewModifier {
     }
     
     public func body(content: Content) -> some View {
-        let overlay = RoundedRectangle(cornerRadius: self.cornerRadius).stroke(self.lineColor, lineWidth: self.lineWidth)
+        let shape = RoundedRectangle(cornerRadius: self.cornerRadius)
+        let overlay = shape.stroke(self.lineColor, lineWidth: self.lineWidth)
         
-        return content.padding(self.innerPadding).overlay(overlay)
+        return content.overlay(overlay).padding(lineWidth / 2.0).clipShape(shape)
     }
 }
 
@@ -37,7 +38,8 @@ public struct CircularBorderViewModifier : ViewModifier {
     }
     
     public func body(content: Content) -> some View {
-        return content.overlay(Circle().stroke(self.lineColor, lineWidth: self.lineWidth))
+        let shape = Circle()
+        return content.overlay(shape.stroke(self.lineColor, lineWidth: self.lineWidth)).padding(lineWidth / 2.0).clipShape(shape)
     }
 }
 

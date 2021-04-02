@@ -16,24 +16,44 @@ extension View {
         return self.disabled(!enabled)
     }
     
-    @inlinable public func hidden(isHidden: Bool, removing: Bool = false) -> some View {
+    @inlinable public func hide(if isHidden: Bool, removing: Bool = false) -> some View {
         if isHidden, removing {
-            return EmptyView().eraseToAnyView()
+            return EmptyView().transition(.opacity).eraseToAnyView()
         } else if isHidden {
-            return self.hidden().eraseToAnyView()
+            return self.hidden().transition(.opacity).eraseToAnyView()
         } else {
-            return self.eraseToAnyView()
+            return self.transition(.opacity).eraseToAnyView()
         }
     }
     
-    @inlinable public func hidden(notHidden: Bool, removing: Bool = false) -> some View {
-        return self.hidden(isHidden: !notHidden, removing: removing)
+    @inlinable public func hide(unless: Bool, removing: Bool = false) -> some View {
+        return self.hide(if: !unless, removing: removing)
     }
     
+    @inlinable public func hide<V>(if optional: V?, removing: Bool = false) -> some View {
+        return self.hide(if: optional == nil, removing: removing)
+    }
+    
+    @inlinable public func hide<V>(unless optional: V?, removing: Bool = false) -> some View {
+        return self.hide(if: optional != nil, removing: removing)
+    }
+    
+    @available(*, deprecated, message: "Use 'hide' instead")
+    @inlinable public func hidden(isHidden: Bool, removing: Bool = false) -> some View {
+        return self.hide(if: isHidden, removing: removing)
+    }
+    
+    @available(*, deprecated, message: "Use 'hide' instead")
+    @inlinable public func hidden(notHidden: Bool, removing: Bool = false) -> some View {
+        return self.hide(unless: notHidden, removing: removing)
+    }
+    
+    @available(*, deprecated, message: "Use 'hide' instead")
     @inlinable public func hidden<V>(ifNil: V?, removing: Bool = false) -> some View {
         return self.hidden(isHidden: ifNil == nil, removing: removing)
     }
     
+    @available(*, deprecated, message: "Use 'hide' instead")
     @inlinable public func hidden<V>(ifNotNil: V?, removing: Bool = false) -> some View {
         return self.hidden(isHidden: ifNotNil != nil, removing: removing)
     }

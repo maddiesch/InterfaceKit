@@ -12,13 +12,13 @@ public struct CenterViewModifier : ViewModifier {
     
     public func body(content: Content) -> some View {
         return VStack {
-            Spacer()
+            Spacer(minLength: 0.0)
             HStack {
-                Spacer()
+                Spacer(minLength: 0.0)
                 content
-                Spacer()
+                Spacer(minLength: 0.0)
             }
-            Spacer()
+            Spacer(minLength: 0.0)
         }
     }
 }

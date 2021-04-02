@@ -20,3 +20,19 @@ extension Color {
     public static let separator = Color(UIColor.separator)
     #endif
 }
+
+#if os(macOS)
+public typealias IFKColor = NSColor
+#else
+public typealias IFKColor = UIColor
+#endif
+
+extension IFKColor {
+    public convenience init?(named name: String, in bundle: Bundle?) {
+        #if os(macOS)
+        self.init(named: name, bundle: bundle)
+        #else
+        self.init(named: name, in: bundle, compatibleWith: nil)
+        #endif
+    }
+}

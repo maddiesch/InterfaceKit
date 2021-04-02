@@ -14,19 +14,28 @@ public struct CalendarPickerView<DayView: View> : View {
     private let provider: (CalendarDay) -> DayView
     private let dateRange: DateInterval
     private let dateFormatter: DateFormatter?
+    private let spacing: CGFloat?
     
     @State private var presentedDate: Date
     
-    public init(date: Binding<Date>, dateRange: DateInterval = .init(start: .distantPast, end: .distantFuture), @ViewBuilder provider: @escaping (CalendarDay) -> DayView) {
+    public init(date: Binding<Date>, dateRange: DateInterval = .init(start: .distantPast, end: .distantFuture), spacing: CGFloat? = nil, @ViewBuilder provider: @escaping (CalendarDay) -> DayView) {
         self.date = date
         self.provider = provider
-        self._presentedDate = State(wrappedValue: date.wrappedValue)
         self.dateRange = dateRange
         self.dateFormatter = nil
+        self.spacing = spacing
+        
+        if date.wrappedValue < dateRange.start {
+            self._presentedDate = State(wrappedValue: dateRange.start)
+        } else if date.wrappedValue > dateRange.end {
+            self._presentedDate = State(wrappedValue: dateRange.end)
+        } else {
+            self._presentedDate = State(wrappedValue: date.wrappedValue)
+        }
     }
     
     public var body: some View {
-        _MonthView($presentedDate, dateFormatter, calendar, dateRange, date, provider)
+        _MonthView($presentedDate, dateFormatter, calendar, dateRange, date, spacing, provider)
             .frame(minWidth: 300.0, minHeight: 270.0, alignment: .top)
     }
 }
@@ -49,7 +58,7 @@ public struct SimpleCalendarDayView : View {
         Text(String(day.dayOfMonth))
             .modifier(CenterViewModifier())
             .modifier(CircularBorderViewModifier(lineWidth: day.isToday ? 2.0 : 0.0, lineColor: Color.separator))
-            .hidden(notHidden: day.isDisplayedMonth)
+            .hide(unless: day.isDisplayedMonth)
     }
 }
 
@@ -63,8 +72,10 @@ fileprivate struct _MonthView<DayView : View> : View {
     private let dateRange: DateInterval
     private let previous: Date
     private let next: Date
+    private let spacing: CGFloat?
+    private let calendar: Calendar
     
-    init(_ presentedDate: Binding<Date>, _ formatter: DateFormatter?, _ calendar: Calendar, _ range: DateInterval, _ date: Binding<Date>, _ provider: @escaping (CalendarDay) -> DayView) {
+    init(_ presentedDate: Binding<Date>, _ formatter: DateFormatter?, _ calendar: Calendar, _ range: DateInterval, _ date: Binding<Date>, _ spacing: CGFloat?, _ provider: @escaping (CalendarDay) -> DayView) {
         let df = formatter ?? {
             let f = DateFormatter()
             f.locale = calendar.locale
@@ -73,6 +84,7 @@ fileprivate struct _MonthView<DayView : View> : View {
         }()
         
         self.date = date
+        self.calendar = calendar
         self.dateRange = range
         self.provider = provider
         self.presented = presentedDate
@@ -81,20 +93,28 @@ fileprivate struct _MonthView<DayView : View> : View {
         self.dayNames = calendar._sortedShortWeekdaySymbols
         self.previous = presentedDate.wrappedValue.previousMonth(calendar)
         self.next = presentedDate.wrappedValue.nextMonth(calendar)
+        self.spacing = spacing
     }
     
     var body: some View {
-        LazyVGrid(columns: columns, spacing: 0.0) {
+        LazyVGrid(columns: columns, spacing: spacing) {
             Section(header: header) {
                 ForEach(dayNames, id: \.self) {
                     Text($0)
                 }.font(.subheadline).foregroundColor(.secondary)
                 ForEach(month.days) { day in
-                    self.provider(day.calendarDay)
-                        .aspectRatio(1.0, contentMode: .fit)
-                        .onTapGesture {
-                            self.date.wrappedValue = day.date
-                        }
+                    ZStack {
+                        self.provider(day.calendarDay)
+                            .padding(.top, spacing)
+                            .aspectRatio(1.0, contentMode: .fit)
+                    }
+                    .onTapGesture {
+                        var components = calendar.dateComponents([.day, .month, .year, .hour, .minute, .second], from: day.date)
+                        components.hour = calendar.component(.hour, from: self.date.wrappedValue)
+                        components.minute = calendar.component(.minute, from: self.date.wrappedValue)
+                        components.second = calendar.component(.second, from: self.date.wrappedValue)
+                        self.date.wrappedValue = calendar.date(from: components)!
+                    }
                 }
             }
         }

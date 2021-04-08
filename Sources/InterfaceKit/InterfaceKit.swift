@@ -59,12 +59,15 @@ extension View {
     }
 }
 
+@available(*, deprecated, renamed: "UserInterface")
+public typealias Interface = UserInterface
 
-public struct Interface {
+public struct UserInterface {
+    public static let feedback = FeedbackGenerator()
 }
 
-extension Interface {
-    public static func toggleSidebar() {
+extension UserInterface {
+    public static func toggleSidebarAction() {
         #if os(macOS)
         let responders = NSApp.keyWindow?.firstResponder?.allResponders.reversed() ?? []
         let selector = #selector(NSSplitViewController.toggleSidebar(_:))
@@ -78,8 +81,54 @@ extension Interface {
         }
         #endif
     }
+    
+    @available(*, deprecated, renamed: "toggleSidebarAction")
+    public static func toggleSidebar() {
+        self.toggleSidebarAction()
+    }
 }
 
+public struct FeedbackGenerator {
+    #if os(iOS)
+    public typealias FeedbackStyle = UIImpactFeedbackGenerator.FeedbackStyle
+    public typealias FeedbackType = UINotificationFeedbackGenerator.FeedbackType
+    
+    public func selectionChanged() {
+        UISelectionFeedbackGenerator().selectionChanged()
+    }
+    
+    public func impactOccurred(_ style: FeedbackStyle) {
+        UIImpactFeedbackGenerator(style: style).impactOccurred()
+    }
+    
+    public func notificationOccurred(_ style: FeedbackType) {
+        UINotificationFeedbackGenerator().notificationOccurred(style)
+    }
+    
+    #else
+    
+    public enum FeedbackStyle {
+        case light
+        case medium
+        case heavy
+        case soft
+        case rigid
+    }
+    
+    public enum FeedbackType {
+        case success
+        case warning
+        case error
+    }
+    
+    public func selectionChanged() {}
+    
+    public func impactOccurred(_ style: FeedbackStyle) {}
+    
+    public func notificationOccurred(_ style: FeedbackType) {}
+    
+    #endif
+}
 
 #if os(macOS)
 

@@ -8,7 +8,10 @@
 import Foundation
 import Combine
 
-public var InterfaceSession: URLSession = {
+@available(*, deprecated, message: "User UserInterface.networkSession")
+public var InterfaceSession: URLSession = _networkSession
+
+private var _networkSession: URLSession = {
     let configuration = URLSessionConfiguration.ephemeral
     configuration.timeoutIntervalForRequest = 10.0
     configuration.timeoutIntervalForResource = 10.0
@@ -16,6 +19,12 @@ public var InterfaceSession: URLSession = {
     
     return URLSession(configuration: configuration)
 }()
+
+extension UserInterface {
+    public static var networkSession: URLSession {
+        return _networkSession
+    }
+}
 
 extension URLSession.DataTaskPublisher {
     public func requireOkayResponse() -> AnyPublisher<URLSession.DataTaskPublisher.Output, Error> {

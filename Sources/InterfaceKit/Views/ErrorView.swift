@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-open class ErrorPresenter : Identifiable {
+open class ErrorPresenter : Identifiable, AlertProvider {
     public let error: Error
     
     public let title: Text

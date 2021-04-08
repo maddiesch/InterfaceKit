@@ -7,6 +7,7 @@
 
 import SwiftUI
 
+@available(*, deprecated, message: "Use a custom view instead")
 public struct SheetView<Content : View> : View {
     private let content: Content
     

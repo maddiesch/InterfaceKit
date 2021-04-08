@@ -25,7 +25,7 @@ public struct Bullet : View {
 
 struct Bullet_Previews: PreviewProvider {
     static var previews: some View {
-        Bullet()
+        Bullet().padding()
     }
 }
 

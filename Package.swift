@@ -15,6 +15,7 @@ let package = Package(
     dependencies: [],
     targets: [
         .target(name: "InterfaceKit", dependencies: []),
+        .target(name: "MacApp", dependencies: ["InterfaceKit"]),
         .testTarget(name: "InterfaceKitTests", dependencies: ["InterfaceKit"]),
     ]
 )

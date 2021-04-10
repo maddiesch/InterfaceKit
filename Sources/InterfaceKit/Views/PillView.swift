@@ -21,6 +21,6 @@ public struct PillView<Content : View> : View {
     }
     
     public var body: some View {
-        self.content.padding(self.edgePadding).background(Capsule().fill(self.color))
+        self.content.colorInvert().padding(self.edgePadding).background(Capsule().fill(self.color))
     }
 }

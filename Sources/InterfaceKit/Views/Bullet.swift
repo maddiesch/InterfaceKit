@@ -17,7 +17,7 @@ public struct Bullet : View {
     }
     
     public var body: some View {
-        circle.frame(width: size, height: size)
+        circle.fill(Color.accentColor).frame(width: size, height: size)
     }
 }
 

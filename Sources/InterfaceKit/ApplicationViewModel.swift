@@ -10,14 +10,9 @@ import Combine
 import CoreData
 
 public typealias AnyCancellable = Combine.AnyCancellable
-public typealias ManagedObjectContext = CoreData.NSManagedObjectContext
 
-open class ApplicationViewModel : ObservableObject, ViewLifecycleTracker {
-    public let context: ManagedObjectContext
-    
-    public init(_ context: ManagedObjectContext) {
-        self.context = context
-    }
+open class BaseApplicationViewModel : ObservableObject, ViewLifecycleTracker {
+    public init() {}
     
     deinit {
         self.cancel()
@@ -35,13 +30,34 @@ open class ApplicationViewModel : ObservableObject, ViewLifecycleTracker {
         self._observers.cancelAll()
     }
     
+    public func beginObservingChanges() {
+        self.willBeginObservingChanges()
+        self.beginObservingChanges(withObservers: &_observers)
+    }
+    
+    open func willBeginObservingChanges() {}
+    
     public func onAppear() {
         self.willAppear()
-        self.beginObservingChanges(withObservers: &_observers)
+        
+        self.beginObservingChanges()
     }
     
     public func onDisappear() {
         self.willDisappear()
         self.cancel()
+    }
+}
+
+@available(*, deprecated, renamed: "ContextApplicationViewModel")
+typealias ApplicationViewModel = ContextApplicationViewModel
+
+public typealias ManagedObjectContext = CoreData.NSManagedObjectContext
+
+open class ContextApplicationViewModel : BaseApplicationViewModel {
+    public let context: ManagedObjectContext
+    
+    public init(_ context: ManagedObjectContext) {
+        self.context = context
     }
 }

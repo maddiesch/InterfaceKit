@@ -12,6 +12,10 @@ extension View {
         return AnyView(self)
     }
     
+    @inlinable public func isLoading(_ loading: Bool) -> some View {
+        return self.redacted(reason: loading ? .placeholder : [])
+    }
+    
     @inlinable public func enabled(_ enabled: Bool) -> some View {
         return self.disabled(!enabled)
     }

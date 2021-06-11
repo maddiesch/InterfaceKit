@@ -8,6 +8,7 @@
 import SwiftUI
 
 extension View {
+    @available(*, deprecated, message: "AnyView should be a last resport as it removes type information from the runtime & compiler for optimizations.")
     @inlinable public func eraseToAnyView() -> AnyView {
         return AnyView(self)
     }
@@ -20,13 +21,15 @@ extension View {
         return self.disabled(!enabled)
     }
     
-    @inlinable public func hide(if isHidden: Bool, removing: Bool = false) -> some View {
+    @inlinable
+    @ViewBuilder
+    public func hide(if isHidden: Bool, removing: Bool = false) -> some View {
         if isHidden, removing {
-            return EmptyView().transition(.opacity).eraseToAnyView()
+            EmptyView().transition(.opacity)
         } else if isHidden {
-            return self.hidden().transition(.opacity).eraseToAnyView()
+            self.hidden().transition(.opacity)
         } else {
-            return self.transition(.opacity).eraseToAnyView()
+            self.transition(.opacity)
         }
     }
     

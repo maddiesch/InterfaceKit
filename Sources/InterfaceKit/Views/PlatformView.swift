@@ -29,8 +29,9 @@ public struct PlatformView<Content : View> : View {
     
     public var body: some View {
         if platform == Platform.current {
-            return self.content().eraseToAnyView()
+            self.content()
+        } else {
+            EmptyView()
         }
-        return EmptyView().eraseToAnyView()
     }
 }

@@ -1,4 +1,4 @@
-// swift-tools-version:5.3
+// swift-tools-version:5.5
 // The swift-tools-version declares the minimum version of Swift required to build this package.
 
 import PackageDescription
@@ -15,7 +15,7 @@ let package = Package(
     dependencies: [],
     targets: [
         .target(name: "InterfaceKit", dependencies: []),
-        .target(name: "MacApp", dependencies: ["InterfaceKit"]),
+        .executableTarget(name: "MacApp", dependencies: ["InterfaceKit"]),
         .testTarget(name: "InterfaceKitTests", dependencies: ["InterfaceKit"]),
     ]
 )

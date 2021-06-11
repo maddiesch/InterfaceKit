@@ -86,9 +86,9 @@ public struct NetworkImageProviderView<Content : View, Placeholder : View> : Vie
     public var body: some View {
         ZStack {
             if let image = self.nativeImage {
-                AnyView(self.contentProvider(image))
+                self.contentProvider(image)
             } else {
-                AnyView(self.placeholder)
+                self.placeholder
             }
         }.onReceive(self.publisher) { image in
             self.nativeImage = image

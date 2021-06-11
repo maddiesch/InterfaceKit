@@ -29,8 +29,9 @@ public struct OptionalValueView<Content : View, Value> : View {
     
     public var body: some View {
         if let value = self.value {
-            return AnyView(self.provider(value))
+            self.provider(value)
+        } else {
+            self.noValueView
         }
-        return self.noValueView
     }
 }
